@@ -17,7 +17,7 @@ In this section, I group by date all the sentiment data that I have collected an
 Here, I transform my time series data so that it is stationary. We included a guideline as well as examples of how to do so. we made functions that asses the stationarity of the data as well as a resource telling you how to interpret the results and what you should do in response to those results.
 7. var_model
 The model that I chose to forecast my data was vector autoregression, which are used for multivariate time series. I compared the results from my fitted model to test data as well as against a persistent model.
-![image](https://user-images.githubusercontent.com/61433579/145917403-085b42a6-0306-4553-b38d-22f5c0766140.png)
+
 
 
 The required data files are in the zipped folder in the repo
