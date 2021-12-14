@@ -1,0 +1,103 @@
+---
+title: "SMM_project"
+author: "Sharanbasav"
+date: "12/13/2021"
+output: html_document
+---
+
+```{r}
+library(readr)
+data <- read_csv("ethereum_subreddits.csv")
+```
+
+We want to filter out bots becuase we are only interested in reddit comments that are made by real people. In addition, bot posts are very redundant and can interfere with our analysis. [Here](https://www.reddit.com/r/autowikibot/wiki/redditbots) is a list of some bots on reddit. However, this list is dated and does not include many bots that are still found in our data. I manually went through the data and created [reddit_bot_names.csv](https://github.com/pcann9/Predict_Bitcoin_Using_Reddit_Sentiment/blob/master/resources/reddit_bot_names.csv) , a new appended list which includes many of these bots that were missed. To filter them out:
+
+
+```{r}
+# import csv of bot usernames
+library(readr)
+reddit_bot_names <- read_csv("reddit_bot_names.csv")
+
+# redefine bot usernames as list
+bot_list <- as.list(reddit_bot_names$bot_names)
+
+# redefine "data" without bot usernames as author of posts
+data <- data[!data$author %in% bot_list, ]
+```
+
+This code takes the character vector of bot usernames and converts it into the list `bot_list`. We use this list to subset `data` where we will not include observations where `data$author` matches any of the patterns in `bot_list`. This gives us a new dataframe without any bots. 
+
+Remove NA rows
+The data has some observations that return "NA". I think this is due to data that is returned from banned subreddits (such as r/incel). We don't want this data (especially comments from r/incel) as some of the steps in our analysis require there to be no "NA" data. To do so:
+```{r}
+#See if there are any NA
+sapply(data, function(x) sum(is.na(x)))
+
+# define rows with NA
+na.rows <- apply(data, 1, function(x){any(is.na(x))})
+
+# redefine df without NA rows
+data <- data[!na.rows,]
+
+# check to see if it worked
+sapply(data, function(x) sum(is.na(x)))
+```
+
+The comment data contains things like urls, references to other subreddits, other users, and raw comment text that is used to format comments on the website. To get rid of all of this:
+
+
+```{r}
+# filter out "http|https|www" links
+data$body <- gsub('(http|https|www)[^([:blank:]|\\"|<|\n\r)]+\\w', " ", data$body)
+
+# url that starts with domain name "reddit.com" 
+data$body <- gsub('[[:alnum:]_-]+(\\.com)[^([:blank:]|\\"|<|\n\r)]*', " ", data$body)
+
+#filter our usernames in comments
+data$body <- gsub('(/u/|u/)[[:alnum:]_-]+', " ", data$body)
+
+#filter out subreddit in comments
+data$body <- gsub("(/r/|r/)[[:alnum:]_-]+", " ", data$body)
+
+# filter out odd character combos
+data$body <- gsub("&gt;", " ", data$body) 
+
+# filter out control characters
+data$body <- gsub("[[:cntrl:]]", " ", data$body)
+
+# filter out numbers
+data$body <- gsub("[[:digit:]]", "", data$body)
+
+# keep the symbols that you do want
+data$body <- gsub("[^[:alnum:][:blank:]?.!,'_-]", "", data$body)
+```
+Some of the reddit comments are in languages other than english. Because of this, we may want to filter them out as our sentiment classifier won't be able to work on them. There are a few different ways of doing this, the first of which you can do in R below. There are more methods available in the next section.
+
+ method 1: filter via subreddit
+First, you will need to create a csv of non-english subreddits to filter out. I have manually created one called [nonenglish_subreddits.csv](https://github.com/pcann9/Predict_Bitcoin_Using_Reddit_Sentiment/blob/master/resources/nonenglish_subreddits.csv) which you can use. How we filter out these subreddits is similar to how we filtered out the bots via their username above. To do so:
+```R
+```{r}
+library(readr)
+
+# our csv of non-english subreddits to filter out
+nonenglish_subreddits <- read_csv("nonenglish_subreddits.csv")
+
+# english data
+english <- data[!data$subreddit %in% nonenglish_subreddits$nonenglish_subreddits, ]
+
+# non-english data
+non_english <- data[data$subreddit %in% nonenglish_subreddits$nonenglish_subreddits, ]
+
+```
+
+You should always check your non-english data to see if it is truly a good filter. In some instances, you may accidentally filter out real english data and it is up to you to determine if that tradeoff is worth it.
+
+ Export Data as CSV
+After cleaning our data, we may want to export it for further analysis in other programs. To do so:
+```R
+```{r}
+
+write.csv(x = data, file = "clean_data.csv", row.names = FALSE, fileEncoding = "UTF-8")
+```
+
+
