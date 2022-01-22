@@ -1,5 +1,13 @@
 # Ethereum_price_prediction
 
+
+-	Scrapped Reddit Social media network to obtain 6 months comments with 131,000 records of Text data for analysis and comparison with the current market price of the crypto currency Ethereum.
+-	Performed VADAR Sentiment Analysis on the Comments data from the Sub reddit Ethereum after data preprocessing and obtained the time series data with the Sentiment Polarity of the comments of 180 days.
+-	Implemented Vector Auto Regressor Model on the time series data to forecast the with train MAE of 0.023 and test MAE of 0.024
+
+
+
+
 Instruction and flow of the project:
 Unzip the file Project/Paper_code_Files and follow the steps below:
 The Following code files were used in the same other, in order to replicate the work, the following files with the necessary resources and data in the same order are needed to be followed.
